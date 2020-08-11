@@ -5,14 +5,21 @@
 package it.polito.tdp.rivers;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.time.*;
 
+import it.polito.tdp.rivers.model.Flow;
 import it.polito.tdp.rivers.model.Model;
+import it.polito.tdp.rivers.model.River;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.MouseEvent;
 
 public class FXMLController {
 	
@@ -25,7 +32,7 @@ public class FXMLController {
     private URL location;
 
     @FXML // fx:id="boxRiver"
-    private ComboBox<?> boxRiver; // Value injected by FXMLLoader
+    private ComboBox<River> boxRiver; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtStartDate"
     private TextField txtStartDate; // Value injected by FXMLLoader
@@ -62,5 +69,28 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.boxRiver.getItems().addAll(model.getAllRivers());
+
+    }
+    
+    @FXML
+    void doSelected(ActionEvent event) {
+    	txtStartDate.clear();
+    	txtEndDate.clear();
+    	River river=boxRiver.getValue();
+    	if(river==null) {
+    		txtResult.appendText("Ma che cazzo succede?\n");
+    		return;
+    	}
+    	List<Flow> flows=this.model.getRiversFlow(river);
+    	if(flows.isEmpty()) {
+    		txtResult.appendText("Non ci sono rilevazioni per tale fiume.\n");
+    		return;
+    	}
+    	double avg=this.model.averageFlow(river);
+    	txtStartDate.setText(flows.get(0).getDay().toString());
+    	txtEndDate.setText(flows.get(flows.size()-1).getDay().toString());
+    	txtFMed.setText(""+avg);
+    	txtNumMeasurements.setText(""+flows.size());
     }
 }
